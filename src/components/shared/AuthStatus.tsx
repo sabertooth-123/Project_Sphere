@@ -19,11 +19,17 @@ export function AuthStatus() {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <UserButton />
+    <div className="flex items-center gap-4">
+      <Link
+        href="/projects/new"
+        className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+      >
+        New project
+      </Link>
       <Link href="/dashboard" className="text-sm underline">
         Dashboard
       </Link>
+      <UserButton />
     </div>
   );
 }
