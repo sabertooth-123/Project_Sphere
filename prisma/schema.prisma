@@ -1,0 +1,328 @@
+// Prisma schema — see docs/phase-2 (Information Architecture + DB Design) for design rationale
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContributorRole {
+  OWNER
+  CONTRIBUTOR
+  MENTOR
+}
+
+enum TechnologyCategory {
+  LANGUAGE
+  FRAMEWORK
+  LIBRARY
+  DATABASE
+  CLOUD
+  TOOL
+  OTHER
+}
+
+model User {
+  id           String      @id @default(cuid())
+  clerkId      String      @unique
+  username     String      @unique
+  name         String
+  email        String      @unique
+  avatarUrl    String?
+  bio          String?     @db.Text
+  headline     String?
+  githubUrl    String?
+  linkedinUrl  String?
+  portfolioUrl String?
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  onboardingCompletedAt DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  skills        UserSkill[]
+  contributions ProjectContributor[]
+  comments      Comment[]
+  likes         Like[]
+  bookmarks     Bookmark[]
+  collections   Collection[]
+  views         ProjectView[]
+  following     Follow[]              @relation("follower")
+  followers     Follow[]              @relation("following")
+
+  @@index([departmentId])
+}
+
+model Department {
+  id    String @id @default(cuid())
+  name  String @unique
+  slug  String @unique
+  users User[]
+
+  @@index([slug])
+}
+
+model Technology {
+  id       String              @id @default(cuid())
+  name     String              @unique
+  slug     String              @unique
+  iconUrl  String?
+  category TechnologyCategory  @default(OTHER)
+
+  userSkills UserSkill[]
+  projects   ProjectTechnology[]
+
+  @@index([slug])
+  @@index([category])
+}
+
+model UserSkill {
+  userId       String
+  technologyId String
+  proficiency  Int?
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, technologyId])
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  iconName    String?
+
+  projects ProjectCategory[]
+
+  @@index([slug])
+}
+
+model Tag {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  projects ProjectTag[]
+
+  @@index([slug])
+}
+
+model Project {
+  id               String        @id @default(cuid())
+  slug             String        @unique
+  title            String
+  shortDescription String
+  longDescription  String        @db.Text
+  coverImageUrl    String?
+  demoVideoUrl     String?
+  githubUrl        String?
+  liveUrl          String?
+  documentationUrl String?
+  status           ProjectStatus @default(DRAFT)
+
+  viewCount     Int @default(0)
+  likeCount     Int @default(0)
+  bookmarkCount Int @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  images          ProjectImage[]
+  contributors    ProjectContributor[]
+  technologies    ProjectTechnology[]
+  categories      ProjectCategory[]
+  tags            ProjectTag[]
+  timeline        TimelineEvent[]
+  awards          Award[]
+  comments        Comment[]
+  likes           Like[]
+  bookmarks       Bookmark[]
+  views           ProjectView[]
+  collectionItems CollectionItem[]
+
+  @@index([status, publishedAt])
+}
+
+model ProjectImage {
+  id        String  @id @default(cuid())
+  projectId String
+  url       String
+  caption   String?
+  order     Int     @default(0)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model ProjectContributor {
+  id                String          @id @default(cuid())
+  projectId         String
+  userId            String?
+  externalName      String?
+  externalAvatarUrl String?
+  role              ContributorRole @default(CONTRIBUTOR)
+  contributionNote  String?
+  joinedAt          DateTime        @default(now())
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user              User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+model ProjectTechnology {
+  projectId    String
+  technologyId String
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, technologyId])
+  @@index([technologyId])
+}
+
+model ProjectCategory {
+  projectId  String
+  categoryId String
+  isPrimary  Boolean  @default(false)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, categoryId])
+  @@index([categoryId])
+}
+
+model ProjectTag {
+  projectId String
+  tagId     String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+  @@index([tagId])
+}
+
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  eventDate   DateTime
+  order       Int      @default(0)
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model Award {
+  id              String    @id @default(cuid())
+  projectId       String
+  title           String
+  competitionName String
+  placement       String?
+  awardDate       DateTime?
+  url             String?
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  projectId String
+  userId    String
+  parentId  String?
+  content   String    @db.Text
+  isEdited  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("replies")
+
+  @@index([projectId])
+  @@index([parentId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       CollectionItem[]
+
+  @@index([userId])
+}
+
+model CollectionItem {
+  collectionId String
+  projectId    String
+  addedAt      DateTime   @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, projectId])
+  @@index([projectId])
+}
+
+model ProjectView {
+  id          String   @id @default(cuid())
+  projectId   String
+  userId      String?
+  sessionHash String?
+  viewedAt    DateTime @default(now())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, viewedAt])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+}
