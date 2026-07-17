@@ -81,11 +81,19 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
 
         <div className="flex flex-col gap-2 text-sm">
           Cover image
-          <input type="file" accept="image/*" onChange={handleFileChange} className="text-sm" />
-          {uploading && <span className="text-xs text-muted-foreground">Uploading…</span>}
+          <label className="flex w-fit cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-sm hover:bg-accent">
+            <span>{uploading ? "Uploading…" : coverImageUrl ? "Change image" : "Choose image"}</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              disabled={uploading}
+              className="hidden"
+            />
+          </label>
           {uploadError && <span className="text-xs text-destructive">{uploadError}</span>}
-          {coverImageUrl && (
-            <div className="relative mt-2 h-32 w-56 overflow-hidden rounded-md">
+          {coverImageUrl && !uploading && (
+            <div className="relative mt-2 h-32 w-56 overflow-hidden rounded-md border border-border">
               <Image src={coverImageUrl} alt="Cover preview" fill className="object-cover" />
             </div>
           )}
