@@ -10,7 +10,7 @@ export type ProjectCardData = {
   likeCount: number;
 };
 
-export function ProjectCard({ project }: { project: ProjectCardData }) {
+export function ProjectCard({ project, role }: { project: ProjectCardData; role?: string }) {
   return (
     <Link
       href={`/projects/${project.slug}`}
@@ -19,6 +19,11 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
       <div className="relative h-32 w-full bg-muted">
         {project.coverImageUrl && (
           <Image src={project.coverImageUrl} alt={project.title} fill className="object-cover" />
+        )}
+        {role && role !== "OWNER" && (
+          <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+            {role.toLowerCase()}
+          </span>
         )}
       </div>
       <div className="p-4">

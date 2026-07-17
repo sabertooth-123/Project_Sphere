@@ -79,6 +79,26 @@ export function listProjectsByOwner(
   });
 }
 
+// Every project a user is credited on, owner or not — for their public
+// profile, where teammates should show up alongside things they own.
+export async function listProjectsByContributor(
+  userId: string,
+  opts: { publishedOnly?: boolean } = {}
+) {
+  const projects = await prisma.project.findMany({
+    where: {
+      contributors: { some: { userId } },
+      ...(opts.publishedOnly ? { status: "PUBLISHED" } : {}),
+    },
+    include: {
+      contributors: { where: { userId }, select: { role: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return projects.map((p) => ({ ...p, role: p.contributors[0]?.role ?? "CONTRIBUTOR" }));
+}
+
 async function uniqueSlug(title: string): Promise<string> {
   const base = slugify(title);
   const existing = await prisma.project.findUnique({ where: { slug: base } });

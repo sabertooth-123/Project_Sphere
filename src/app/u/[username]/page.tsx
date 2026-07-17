@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getUserByUsername } from "@/services/users";
-import { listProjectsByOwner } from "@/services/projects";
+import { listProjectsByContributor } from "@/services/projects";
 import { ProjectCard } from "@/features/discovery/components/ProjectCard";
 
 export async function generateMetadata({
@@ -36,7 +36,7 @@ export default async function ProfilePage({
   const user = await getUserByUsername(username);
   if (!user) notFound();
 
-  const projects = await listProjectsByOwner(user.id, { publishedOnly: true });
+  const projects = await listProjectsByContributor(user.id, { publishedOnly: true });
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
@@ -99,7 +99,7 @@ export default async function ProfilePage({
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard key={project.id} project={project} role={project.role} />
           ))}
         </div>
       )}
