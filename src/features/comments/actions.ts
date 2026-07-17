@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { createComment, deleteComment } from "@/services/comments";
 import type { ActionResult } from "@/types/api";
 
@@ -18,8 +18,8 @@ export async function addCommentAction(
   _prev: ActionResult<null> | null,
   formData: FormData
 ): Promise<ActionResult<null>> {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) {
     return { success: false, error: "Could not find your account." };
   }
@@ -45,8 +45,8 @@ export async function addCommentAction(
 }
 
 export async function deleteCommentAction(commentId: string, slug: string) {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) throw new Error("Could not find your account.");
 
   await deleteComment(commentId, user.id);

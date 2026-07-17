@@ -2,9 +2,8 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { auth } from "@clerk/nextjs/server";
 import { getProjectBySlug, isProjectOwner } from "@/services/projects";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { getViewerEngagement } from "@/services/engagement";
 import { LikeButton } from "@/features/engagement/components/LikeButton";
 import { BookmarkButton } from "@/features/engagement/components/BookmarkButton";
@@ -50,8 +49,7 @@ export default async function ProjectDetailPage({
 
   if (!project) notFound();
 
-  const { userId: clerkId } = await auth();
-  const viewer = clerkId ? await getUserByClerkId(clerkId) : null;
+  const viewer = await getOrCreateCurrentUser();
   const isOwner = viewer ? await isProjectOwner(project.id, viewer.id) : false;
 
   if (project.status !== "PUBLISHED" && !isOwner) {

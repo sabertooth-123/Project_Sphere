@@ -3,7 +3,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { getUserByClerkId, updateUserProfile } from "@/services/users";
+import { updateUserProfile } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { profileFormSchema } from "./schema";
 import type { ActionResult } from "@/types/api";
 
@@ -11,8 +12,8 @@ export async function updateProfileAction(
   _prev: ActionResult<null> | null,
   formData: FormData
 ): Promise<ActionResult<null>> {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) {
     return { success: false, error: "Could not find your account." };
   }

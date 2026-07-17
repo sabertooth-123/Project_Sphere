@@ -1,12 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { listBookmarkedProjects } from "@/services/engagement";
 import { ProjectCard } from "@/features/discovery/components/ProjectCard";
 
 export default async function DashboardBookmarksPage() {
-  const { userId } = await auth.protect();
-  const user = await getUserByClerkId(userId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) redirect("/");
 
   const projects = await listBookmarkedProjects(user.id);

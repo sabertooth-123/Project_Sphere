@@ -1,20 +1,20 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { listDepartments } from "@/services/taxonomy";
 import { OnboardingForm } from "@/features/onboarding/components/OnboardingForm";
 
 export default async function OnboardingPage() {
-  const { userId } = await auth.protect();
+  await auth.protect();
 
   const [user, departments, clerkUser] = await Promise.all([
-    getUserByClerkId(userId),
+    getOrCreateCurrentUser(),
     listDepartments(),
     currentUser(),
   ]);
 
   if (!user) {
-    // Webhook hasn't landed yet (rare race on first sign-in) — send them back to try again shortly.
+    // No primary email on the Clerk account — genuinely can't proceed without one.
     redirect("/");
   }
 

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import {
   createProject,
   isProjectOwner,
@@ -20,8 +20,8 @@ export async function createProjectAction(
   _prev: ActionResult<null> | null,
   formData: FormData
 ): Promise<ActionResult<null>> {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) {
     return { success: false, error: "Could not find your account. Try refreshing." };
   }
@@ -69,8 +69,8 @@ export async function addContributorAction(
   _prev: ActionResult<null> | null,
   formData: FormData
 ): Promise<ActionResult<null>> {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user || !(await isProjectOwner(projectId, user.id))) {
     return { success: false, error: "Only the project owner can add contributors." };
   }
@@ -96,8 +96,8 @@ export async function addContributorAction(
 }
 
 export async function removeContributorAction(contributorId: string, projectId: string, slug: string) {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user || !(await isProjectOwner(projectId, user.id))) {
     throw new Error("Only the project owner can remove contributors.");
   }
@@ -107,8 +107,8 @@ export async function removeContributorAction(contributorId: string, projectId: 
 }
 
 async function assertOwner(projectId: string) {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user || !(await isProjectOwner(projectId, user.id))) {
     throw new Error("Only the project owner can do that.");
   }

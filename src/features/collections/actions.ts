@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import {
   createCollection,
   deleteCollection,
@@ -18,8 +18,8 @@ export async function createCollectionAction(
   _prev: ActionResult<null> | null,
   formData: FormData
 ): Promise<ActionResult<null>> {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) {
     return { success: false, error: "Could not find your account." };
   }
@@ -44,8 +44,8 @@ export async function createCollectionAction(
 }
 
 async function assertCollectionOwner(collectionId: string) {
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user || !(await isCollectionOwner(collectionId, user.id))) {
     throw new Error("Only the collection owner can do that.");
   }

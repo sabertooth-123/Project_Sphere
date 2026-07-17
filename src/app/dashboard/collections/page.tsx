@@ -1,13 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { listUserCollections } from "@/services/collections";
 import { CollectionForm } from "@/features/collections/components/CollectionForm";
 
 export default async function DashboardCollectionsPage() {
-  const { userId } = await auth.protect();
-  const user = await getUserByClerkId(userId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) redirect("/");
 
   const collections = await listUserCollections(user.id);

@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { getCollectionById, isCollectionOwner } from "@/services/collections";
 import { listBookmarkedProjects } from "@/services/engagement";
 import { deleteCollectionAction } from "@/features/collections/actions";
@@ -13,8 +13,8 @@ export default async function CollectionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { userId: clerkId } = await auth.protect();
-  const user = await getUserByClerkId(clerkId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) redirect("/");
 
   const collection = await getCollectionById(id);

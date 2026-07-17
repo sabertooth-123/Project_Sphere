@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/utils/slugify";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { onboardingSchema } from "./schema";
 import type { ActionResult } from "@/types/api";
 
@@ -11,7 +12,12 @@ export async function completeOnboarding(
   _prev: ActionResult<null> | null,
   formData: FormData
 ): Promise<ActionResult<null>> {
-  const { userId } = await auth.protect();
+  await auth.protect();
+  const currentRow = await getOrCreateCurrentUser();
+  if (!currentRow) {
+    return { success: false, error: "Could not find your account. Try refreshing." };
+  }
+  const userId = currentRow.clerkId;
 
   const parsed = onboardingSchema.safeParse({
     username: formData.get("username"),

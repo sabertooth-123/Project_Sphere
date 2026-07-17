@@ -1,12 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getUserByClerkId, getUserByUsername } from "@/services/users";
+import { getUserByUsername } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { listDepartments } from "@/services/taxonomy";
 import { ProfileEditForm } from "@/features/profile/components/ProfileEditForm";
 
 export default async function DashboardSettingsPage() {
-  const { userId } = await auth.protect();
-  const user = await getUserByClerkId(userId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) redirect("/");
 
   const [departments, fullUser] = await Promise.all([

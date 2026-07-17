@@ -1,13 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getUserByClerkId } from "@/services/users";
+import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import { listProjectsByOwner } from "@/services/projects";
 import { ProjectManageRow } from "@/features/projects/components/ProjectManageRow";
 
 export default async function DashboardProjectsPage() {
-  const { userId } = await auth.protect();
-  const user = await getUserByClerkId(userId);
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
   if (!user) redirect("/");
 
   const projects = await listProjectsByOwner(user.id);
