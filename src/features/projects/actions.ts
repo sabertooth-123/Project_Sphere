@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { getOrCreateCurrentUser } from "@/lib/getCurrentUser";
 import {
   createProject,
+  updateProject,
   isProjectOwner,
   publishProject,
   unpublishProject,
@@ -55,6 +56,58 @@ export async function createProjectAction(
   });
 
   redirect(`/projects/${project.slug}`);
+}
+
+export async function updateProjectAction(
+  projectId: string,
+  slug: string,
+  _prev: ActionResult<null> | null,
+  formData: FormData
+): Promise<ActionResult<null>> {
+  await auth.protect();
+  const user = await getOrCreateCurrentUser();
+  if (!user || !(await isProjectOwner(projectId, user.id))) {
+    return { success: false, error: "Only the project owner can edit this project." };
+  }
+
+  const parsed = projectFormSchema.safeParse({
+    title: formData.get("title"),
+    shortDescription: formData.get("shortDescription"),
+    longDescription: formData.get("longDescription"),
+    coverImageUrl: formData.get("coverImageUrl") ?? "",
+    demoVideoUrl: formData.get("demoVideoUrl") ?? "",
+    githubUrl: formData.get("githubUrl") ?? "",
+    liveUrl: formData.get("liveUrl") ?? "",
+    documentationUrl: formData.get("documentationUrl") ?? "",
+    technologies: formData.get("technologies") ?? "",
+    tags: formData.get("tags") ?? "",
+    categoryIds: formData.getAll("categoryIds"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  await updateProject(projectId, {
+    title: parsed.data.title,
+    shortDescription: parsed.data.shortDescription,
+    longDescription: parsed.data.longDescription,
+    coverImageUrl: parsed.data.coverImageUrl,
+    demoVideoUrl: parsed.data.demoVideoUrl,
+    githubUrl: parsed.data.githubUrl,
+    liveUrl: parsed.data.liveUrl,
+    documentationUrl: parsed.data.documentationUrl,
+    technologies: parsed.data.technologies,
+    tags: parsed.data.tags,
+    categoryIds: parsed.data.categoryIds,
+  });
+
+  revalidatePath(`/projects/${slug}`);
+  redirect(`/projects/${slug}`);
 }
 
 const addContributorSchema = z.object({

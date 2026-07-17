@@ -156,6 +156,55 @@ export async function createProject(ownerUserId: string, data: ProjectFormData) 
   });
 }
 
+export type ProjectUpdateData = Omit<ProjectFormData, "publish">;
+
+export async function updateProject(projectId: string, data: ProjectUpdateData) {
+  return prisma.$transaction(async (tx) => {
+    const project = await tx.project.update({
+      where: { id: projectId },
+      data: {
+        title: data.title,
+        shortDescription: data.shortDescription,
+        longDescription: data.longDescription,
+        coverImageUrl: data.coverImageUrl || null,
+        demoVideoUrl: data.demoVideoUrl || null,
+        githubUrl: data.githubUrl || null,
+        liveUrl: data.liveUrl || null,
+        documentationUrl: data.documentationUrl || null,
+      },
+    });
+
+    await tx.projectTechnology.deleteMany({ where: { projectId } });
+    for (const name of data.technologies) {
+      const techSlug = slugify(name);
+      const technology = await tx.technology.upsert({
+        where: { slug: techSlug },
+        update: {},
+        create: { name, slug: techSlug },
+      });
+      await tx.projectTechnology.create({ data: { projectId, technologyId: technology.id } });
+    }
+
+    await tx.projectTag.deleteMany({ where: { projectId } });
+    for (const name of data.tags) {
+      const tagSlug = slugify(name);
+      const tag = await tx.tag.upsert({
+        where: { slug: tagSlug },
+        update: {},
+        create: { name, slug: tagSlug },
+      });
+      await tx.projectTag.create({ data: { projectId, tagId: tag.id } });
+    }
+
+    await tx.projectCategory.deleteMany({ where: { projectId } });
+    for (const categoryId of data.categoryIds) {
+      await tx.projectCategory.create({ data: { projectId, categoryId } });
+    }
+
+    return project;
+  });
+}
+
 export async function isProjectOwner(projectId: string, userId: string) {
   const contributor = await prisma.projectContributor.findFirst({
     where: { projectId, userId, role: "OWNER" },

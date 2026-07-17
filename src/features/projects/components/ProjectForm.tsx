@@ -8,16 +8,45 @@ import type { ActionResult } from "@/types/api";
 
 type Category = { id: string; name: string };
 
-export function ProjectForm({ categories }: { categories: Category[] }) {
+type ProjectFormDefaults = {
+  title?: string;
+  shortDescription?: string;
+  longDescription?: string;
+  coverImageUrl?: string;
+  demoVideoUrl?: string;
+  githubUrl?: string;
+  liveUrl?: string;
+  documentationUrl?: string;
+  technologies?: string;
+  tags?: string;
+  categoryIds?: string[];
+};
+
+type BoundAction = (
+  prev: ActionResult<null> | null,
+  formData: FormData
+) => Promise<ActionResult<null>>;
+
+export function ProjectForm({
+  categories,
+  action,
+  defaults,
+}: {
+  categories: Category[];
+  action?: BoundAction;
+  defaults?: ProjectFormDefaults;
+}) {
+  const isEdit = Boolean(action);
   const [state, formAction, pending] = useActionState<ActionResult<null> | null, FormData>(
-    createProjectAction,
+    action ?? createProjectAction,
     null
   );
-  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState(defaults?.coverImageUrl ?? "");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const errors = state && !state.success ? state.fieldErrors ?? {} : {};
+  const categoryIds = new Set(defaults?.categoryIds ?? []);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -45,7 +74,12 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
 
         <label className="flex flex-col gap-1 text-sm">
           Title
-          <input name="title" required className="rounded-md border border-input px-3 py-2 text-sm" />
+          <input
+            name="title"
+            required
+            defaultValue={defaults?.title}
+            className="rounded-md border border-input px-3 py-2 text-sm"
+          />
           {errors.title && <span className="text-xs text-destructive">{errors.title[0]}</span>}
         </label>
 
@@ -54,6 +88,7 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
           <input
             name="shortDescription"
             required
+            defaultValue={defaults?.shortDescription}
             placeholder="One sentence — shows on the project card"
             className="rounded-md border border-input px-3 py-2 text-sm"
           />
@@ -68,6 +103,7 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
             name="longDescription"
             required
             rows={6}
+            defaultValue={defaults?.longDescription}
             className="rounded-md border border-input px-3 py-2 text-sm"
           />
           {errors.longDescription && (
@@ -102,7 +138,12 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
 
         <label className="flex flex-col gap-1 text-sm">
           Demo video URL
-          <input name="demoVideoUrl" type="url" className="rounded-md border border-input px-3 py-2 text-sm" />
+          <input
+            name="demoVideoUrl"
+            type="url"
+            defaultValue={defaults?.demoVideoUrl}
+            className="rounded-md border border-input px-3 py-2 text-sm"
+          />
         </label>
       </section>
 
@@ -113,6 +154,7 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
           Technologies
           <input
             name="technologies"
+            defaultValue={defaults?.technologies}
             placeholder="React, PyTorch, PostgreSQL"
             className="rounded-md border border-input px-3 py-2 text-sm"
           />
@@ -123,6 +165,7 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
           Tags
           <input
             name="tags"
+            defaultValue={defaults?.tags}
             placeholder="capstone, hackathon, solo-project"
             className="rounded-md border border-input px-3 py-2 text-sm"
           />
@@ -134,7 +177,12 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
           <div className="flex flex-wrap gap-3">
             {categories.map((c) => (
               <label key={c.id} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" name="categoryIds" value={c.id} />
+                <input
+                  type="checkbox"
+                  name="categoryIds"
+                  value={c.id}
+                  defaultChecked={categoryIds.has(c.id)}
+                />
                 {c.name}
               </label>
             ))}
@@ -147,38 +195,65 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
 
         <label className="flex flex-col gap-1 text-sm">
           GitHub URL
-          <input name="githubUrl" type="url" className="rounded-md border border-input px-3 py-2 text-sm" />
+          <input
+            name="githubUrl"
+            type="url"
+            defaultValue={defaults?.githubUrl}
+            className="rounded-md border border-input px-3 py-2 text-sm"
+          />
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Live demo URL
-          <input name="liveUrl" type="url" className="rounded-md border border-input px-3 py-2 text-sm" />
+          <input
+            name="liveUrl"
+            type="url"
+            defaultValue={defaults?.liveUrl}
+            className="rounded-md border border-input px-3 py-2 text-sm"
+          />
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Documentation URL
-          <input name="documentationUrl" type="url" className="rounded-md border border-input px-3 py-2 text-sm" />
+          <input
+            name="documentationUrl"
+            type="url"
+            defaultValue={defaults?.documentationUrl}
+            className="rounded-md border border-input px-3 py-2 text-sm"
+          />
         </label>
       </section>
 
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          name="publish"
-          value="draft"
-          disabled={pending || uploading}
-          className="rounded-md border border-input px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
-          Save draft
-        </button>
-        <button
-          type="submit"
-          name="publish"
-          value="publish"
-          disabled={pending || uploading}
-          className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
-          {pending ? "Publishing…" : "Publish"}
-        </button>
-      </div>
+      {isEdit ? (
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            disabled={pending || uploading}
+            className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
+          >
+            {pending ? "Saving…" : "Save changes"}
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            name="publish"
+            value="draft"
+            disabled={pending || uploading}
+            className="rounded-md border border-input px-4 py-2 text-sm font-medium disabled:opacity-50"
+          >
+            Save draft
+          </button>
+          <button
+            type="submit"
+            name="publish"
+            value="publish"
+            disabled={pending || uploading}
+            className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
+          >
+            {pending ? "Publishing…" : "Publish"}
+          </button>
+        </div>
+      )}
     </form>
   );
 }

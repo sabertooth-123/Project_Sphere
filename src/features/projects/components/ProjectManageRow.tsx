@@ -44,6 +44,9 @@ export function ProjectManageRow({ project }: { project: Project }) {
         </div>
       </div>
       <div className="flex gap-3 text-xs">
+        <Link href={`/projects/${project.slug}/edit`} className="underline">
+          Edit
+        </Link>
         {project.status === "PUBLISHED" ? (
           <button
             type="button"
