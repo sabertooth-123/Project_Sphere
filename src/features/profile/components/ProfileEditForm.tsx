@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { toast } from "sonner";
 import { updateProfileAction } from "../actions";
 import type { ActionResult } from "@/types/api";
 
@@ -30,10 +31,13 @@ export function ProfileEditForm({
 
   const errors = state && !state.success ? state.fieldErrors ?? {} : {};
 
+  useEffect(() => {
+    if (state?.success) toast.success("Profile updated");
+  }, [state]);
+
   return (
     <form action={formAction} className="flex flex-col gap-4 max-w-md">
       {state && !state.success && <p className="text-sm text-destructive">{state.error}</p>}
-      {state && state.success && <p className="text-sm text-accent2">Saved.</p>}
 
       <label className="flex flex-col gap-1 text-sm">
         Username

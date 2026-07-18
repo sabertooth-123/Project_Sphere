@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import Image from "next/image";
 import { createProjectAction } from "../actions";
 import { uploadCoverImage } from "../uploadCoverImage";
+import { MotionButton } from "@/components/ui/MotionButton";
 import type { ActionResult } from "@/types/api";
 
 type Category = { id: string; name: string };
@@ -224,34 +225,24 @@ export function ProjectForm({
 
       {isEdit ? (
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={pending || uploading}
-            className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
+          <MotionButton type="submit" disabled={pending || uploading}>
             {pending ? "Saving…" : "Save changes"}
-          </button>
+          </MotionButton>
         </div>
       ) : (
         <div className="flex gap-3">
-          <button
+          <MotionButton
             type="submit"
             name="publish"
             value="draft"
+            variant="secondary"
             disabled={pending || uploading}
-            className="rounded-md border border-input px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             Save draft
-          </button>
-          <button
-            type="submit"
-            name="publish"
-            value="publish"
-            disabled={pending || uploading}
-            className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
+          </MotionButton>
+          <MotionButton type="submit" name="publish" value="publish" disabled={pending || uploading}>
             {pending ? "Publishing…" : "Publish"}
-          </button>
+          </MotionButton>
         </div>
       )}
     </form>

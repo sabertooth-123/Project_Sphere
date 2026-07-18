@@ -3,8 +3,10 @@ import { Archivo_Narrow, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
+import { MotionConfig } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { ToasterProvider } from "@/components/shared/ToasterProvider";
 import "./globals.css";
 
 const displayFace = Archivo_Narrow({
@@ -44,9 +46,12 @@ export default function RootLayout({
       >
         <body className="min-h-full flex flex-col">
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <Navbar />
-            <div className="flex flex-1 flex-col">{children}</div>
-            <Footer />
+            <MotionConfig reducedMotion="user">
+              <Navbar />
+              <div className="flex flex-1 flex-col">{children}</div>
+              <Footer />
+              <ToasterProvider />
+            </MotionConfig>
           </ThemeProvider>
           <Analytics />
         </body>

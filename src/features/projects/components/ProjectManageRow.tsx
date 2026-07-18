@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   publishProjectAction,
   unpublishProjectAction,
@@ -22,7 +23,24 @@ export function ProjectManageRow({ project }: { project: Project }) {
 
   function handleDelete() {
     if (!confirm(`Delete "${project.title}"? This can't be undone.`)) return;
-    startTransition(() => deleteProjectAction(project.id));
+    startTransition(async () => {
+      await deleteProjectAction(project.id);
+      toast.success(`"${project.title}" deleted`);
+    });
+  }
+
+  function handlePublish() {
+    startTransition(async () => {
+      await publishProjectAction(project.id, project.slug);
+      toast.success(`"${project.title}" published`);
+    });
+  }
+
+  function handleUnpublish() {
+    startTransition(async () => {
+      await unpublishProjectAction(project.id, project.slug);
+      toast.success(`"${project.title}" unpublished`);
+    });
   }
 
   return (
@@ -48,21 +66,11 @@ export function ProjectManageRow({ project }: { project: Project }) {
           Edit
         </Link>
         {project.status === "PUBLISHED" ? (
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => startTransition(() => unpublishProjectAction(project.id, project.slug))}
-            className="underline"
-          >
+          <button type="button" disabled={isPending} onClick={handleUnpublish} className="underline">
             Unpublish
           </button>
         ) : (
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => startTransition(() => publishProjectAction(project.id, project.slug))}
-            className="underline"
-          >
+          <button type="button" disabled={isPending} onClick={handlePublish} className="underline">
             Publish
           </button>
         )}

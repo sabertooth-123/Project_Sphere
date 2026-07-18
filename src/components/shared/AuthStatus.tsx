@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth, SignInButton, UserButton } from "@clerk/nextjs";
+import { MotionButton } from "@/components/ui/MotionButton";
 
 export function AuthStatus() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -11,9 +12,7 @@ export function AuthStatus() {
   if (!isSignedIn) {
     return (
       <SignInButton>
-        <button className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium">
-          Sign in
-        </button>
+        <MotionButton>Sign in</MotionButton>
       </SignInButton>
     );
   }
@@ -22,7 +21,7 @@ export function AuthStatus() {
     <div className="flex items-center gap-4">
       <Link
         href="/projects/new"
-        className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+        className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:scale-[1.02] active:scale-95"
       >
         New project
       </Link>
