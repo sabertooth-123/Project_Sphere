@@ -1,3 +1,10 @@
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { DURATION, EASE } from "@/lib/motion";
+import { MotionButton } from "@/components/ui/MotionButton";
+
 type Option = { slug: string; name: string };
 
 export function FilterBar({
@@ -17,16 +24,30 @@ export function FilterBar({
     sort: string;
   };
 }) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <form method="get" className="mb-8 flex flex-col gap-4">
       <div className="flex flex-wrap gap-3">
-        <input
-          type="search"
-          name="q"
-          defaultValue={defaults.q}
-          placeholder="Search projects…"
-          className="flex-1 min-w-[200px] rounded-md border border-input px-3 py-2 text-sm"
-        />
+        <motion.div
+          animate={{
+            boxShadow: focused
+              ? "0 0 0 3px var(--accent2-soft, rgba(113,183,196,0.16)), 0 4px 16px -6px rgba(0,0,0,0.2)"
+              : "0 0 0 0px transparent, 0 0px 0px rgba(0,0,0,0)",
+          }}
+          transition={{ duration: DURATION.hover, ease: EASE }}
+          className="min-w-[200px] flex-1 rounded-md"
+        >
+          <input
+            type="search"
+            name="q"
+            defaultValue={defaults.q}
+            placeholder="Search projects…"
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            className="w-full rounded-md border border-input px-3 py-2 text-sm outline-none"
+          />
+        </motion.div>
         <select
           name="sort"
           defaultValue={defaults.sort}
@@ -62,29 +83,29 @@ export function FilterBar({
         </select>
       </div>
 
-      <fieldset className="flex flex-wrap gap-3 text-sm">
+      <fieldset className="flex flex-wrap gap-2 text-sm">
         <legend className="mb-1 w-full text-xs uppercase tracking-wide text-muted-foreground">
           Technology
         </legend>
         {technologies.map((t) => (
-          <label key={t.slug} className="flex items-center gap-1.5">
+          <label key={t.slug} className="cursor-pointer">
             <input
               type="checkbox"
               name="technology"
               value={t.slug}
               defaultChecked={defaults.technologySlugs?.includes(t.slug)}
+              className="peer sr-only"
             />
-            {t.name}
+            <span className="inline-block rounded-full border border-input px-3 py-1 text-xs font-medium text-muted-foreground transition-colors duration-200 ease-out peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background">
+              {t.name}
+            </span>
           </label>
         ))}
       </fieldset>
 
-      <button
-        type="submit"
-        className="self-start rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium"
-      >
+      <MotionButton type="submit" className="self-start">
         Apply filters
-      </button>
+      </MotionButton>
     </form>
   );
 }
