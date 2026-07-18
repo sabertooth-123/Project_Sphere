@@ -12,6 +12,12 @@ export type ListProjectsFilters = {
   limit?: number;
 };
 
+// Included on every card-list query so ProjectCard can show a few tech
+// badges without each caller having to remember to ask for them.
+const cardTechnologiesInclude = {
+  technologies: { include: { technology: true }, take: 4 },
+};
+
 export async function listProjects(filters: ListProjectsFilters = {}) {
   const { q, categorySlug, technologySlugs, departmentSlug, sort = "recent", cursor, limit = 20 } = filters;
 
@@ -45,6 +51,7 @@ export async function listProjects(filters: ListProjectsFilters = {}) {
     where,
     orderBy,
     take: limit,
+    include: cardTechnologiesInclude,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
   });
 }
@@ -76,6 +83,7 @@ export function listProjectsByOwner(
       ...(opts.publishedOnly ? { status: "PUBLISHED" } : {}),
     },
     orderBy: { createdAt: "desc" },
+    include: cardTechnologiesInclude,
   });
 }
 
@@ -92,6 +100,7 @@ export async function listProjectsByContributor(
     },
     include: {
       contributors: { where: { userId }, select: { role: true } },
+      ...cardTechnologiesInclude,
     },
     orderBy: { createdAt: "desc" },
   });

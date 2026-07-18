@@ -43,7 +43,9 @@ export async function toggleBookmark(userId: string, projectId: string) {
 export async function listBookmarkedProjects(userId: string) {
   const bookmarks = await prisma.bookmark.findMany({
     where: { userId },
-    include: { project: true },
+    include: {
+      project: { include: { technologies: { include: { technology: true }, take: 4 } } },
+    },
     orderBy: { createdAt: "desc" },
   });
   return bookmarks.map((b) => b.project);
