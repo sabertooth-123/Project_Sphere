@@ -137,3 +137,33 @@
     @apply font-sans;
   }
 }
+
+/* Hero background — a slow ambient gradient shift behind the floating shapes.
+   Plain CSS keyframes on purpose: infinite decorative motion is cheaper and
+   more reliable here than driving it through JS/rAF. */
+.hero-gradient-layer {
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 0%,
+    color-mix(in srgb, var(--accent) 12%, transparent),
+    transparent 70%
+  );
+  animation: hero-gradient-shift 16s ease-in-out infinite;
+}
+
+@keyframes hero-gradient-shift {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-gradient-layer {
+    animation: none;
+  }
+}

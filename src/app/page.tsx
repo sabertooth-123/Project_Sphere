@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { listProjects } from "@/services/projects";
 import { ProjectCard } from "@/features/discovery/components/ProjectCard";
-import { HomeCTA } from "@/components/shared/HomeCTA";
+import { HeroBackground } from "@/components/shared/HeroBackground";
+import { HeroContent } from "@/components/shared/HeroContent";
 
 // Prisma calls alone don't force dynamic rendering — without this, the
 // trending teaser would be baked in at build time and go stale until deploy.
@@ -30,18 +31,9 @@ export default async function Home() {
 
   return (
     <main>
-      <section className="mx-auto flex max-w-3xl flex-col items-center gap-5 px-6 pt-20 pb-16 text-center">
-        <span className="font-mono text-xs uppercase tracking-wide text-accent2">
-          For student builders
-        </span>
-        <h1 className="font-display text-4xl font-semibold sm:text-5xl">
-          Show the world what you built
-        </h1>
-        <p className="max-w-lg text-muted-foreground">
-          A home for student projects — discover what your peers are building, find your next
-          collaborator, and publish work that&apos;s good enough to put on a resume.
-        </p>
-        <HomeCTA />
+      <section className="relative">
+        <HeroBackground />
+        <HeroContent />
       </section>
 
       <section className="border-y border-border bg-card/50">
