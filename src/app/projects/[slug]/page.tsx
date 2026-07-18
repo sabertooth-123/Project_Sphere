@@ -10,6 +10,8 @@ import { BookmarkButton } from "@/features/engagement/components/BookmarkButton"
 import { ViewTracker } from "@/features/engagement/components/ViewTracker";
 import { CommentThread } from "@/features/comments/components/CommentThread";
 import { ContributorManager } from "@/features/projects/components/ContributorManager";
+import { GitHubTimeline } from "@/features/projects/components/GitHubTimeline";
+import { GitHubTimelineSkeleton } from "@/features/projects/components/GitHubTimelineSkeleton";
 
 export async function generateMetadata({
   params,
@@ -163,6 +165,12 @@ export default async function ProjectDetailPage({
             </div>
           )}
         </section>
+      )}
+
+      {project.githubUrl && (
+        <Suspense fallback={<GitHubTimelineSkeleton />}>
+          <GitHubTimeline githubUrl={project.githubUrl} />
+        </Suspense>
       )}
 
       <section>
