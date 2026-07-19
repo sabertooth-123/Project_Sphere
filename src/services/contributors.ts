@@ -22,6 +22,6 @@ export async function addContributor(
   throw new Error("Provide either a username or an external contributor name.");
 }
 
-export function removeContributor(contributorId: string) {
-  return prisma.projectContributor.delete({ where: { id: contributorId } });
+export function removeContributor(contributorId: string, projectId: string) {
+  return prisma.projectContributor.deleteMany({ where: { id: contributorId, projectId } });
 }

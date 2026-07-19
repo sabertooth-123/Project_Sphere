@@ -155,7 +155,7 @@ export async function removeContributorAction(contributorId: string, projectId: 
     throw new Error("Only the project owner can remove contributors.");
   }
 
-  await removeContributor(contributorId);
+  await removeContributor(contributorId, projectId);
   revalidatePath(`/projects/${slug}`);
 }
 
