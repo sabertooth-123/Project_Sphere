@@ -1,0 +1,10 @@
+{
+  "projectId": "dfb9597f-0cb4-4f83-8cf3-4d8900cba4e1",
+  "pkg": "project-sphere-design-kit",
+  "globalName": "ProjectSphereDS",
+  "shape": "package",
+  "buildCmd": "npm run build",
+  "cssEntry": "dist/styles.css",
+  "tsconfig": "tsconfig.json",
+  "readmeHeader": ".design-sync/conventions.md"
+}

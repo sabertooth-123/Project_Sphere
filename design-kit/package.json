@@ -1,0 +1,18 @@
+{
+  "name": "project-sphere-design-kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build:js": "tsup",
+    "build:css": "tailwindcss -i ../src/app/globals.css -o ./dist/styles.css",
+    "build": "npm run build:js && npm run build:css"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4",
+    "tsup": "^8"
+  }
+}
