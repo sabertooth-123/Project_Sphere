@@ -4,6 +4,7 @@ A platform for university students to publish the projects they've built, discov
 
 **Live:** [project-sphere-ashy.vercel.app](https://project-sphere-ashy.vercel.app)
 **Repo:** [github.com/sabertooth-123/Project_Sphere](https://github.com/sabertooth-123/Project_Sphere)
+**demo video:** https://drive.google.com/file/d/1KyeKfPDUuvr4o91d-ykEJ9XvfxIXioKk/view?usp=drive_link
 
 ---
 
